@@ -59,6 +59,7 @@ src/
 
 ## ⚙️ Tech Stack
 
+<p align="left"> <img src="https://skillicons.dev/icons?i=react" alt="React" width="50"/> <img src="https://skillicons.dev/icons?i=typescript" alt="TypeScript" width="50"/> <img src="https://skillicons.dev/icons?i=vite" alt="Vite" width="50"/> <img src="https://skillicons.dev/icons?i=tailwind" alt="TailwindCSS" width="50"/> <img src="https://raw.githubusercontent.com/shadcn/ui/main/apps/www/public/android-chrome-192x192.png" alt="shadcn/ui" width="50"/> <img src="https://skillicons.dev/icons?i=reactrouter" alt="React Router" width="50"/> <img src="https://skillicons.dev/icons?i=axios" alt="Axios" width="50"/> <img src="https://lucide.dev/favicon.ico" alt="Lucide Icons" width="50"/> </p>
 - **Frontend Framework**: [React](https://reactjs.org/) + [TypeScript](https://www.typescriptlang.org/)
 - **Bundler**: [Vite](https://vitejs.dev/)
 - **Styling**: [TailwindCSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
