@@ -12,13 +12,14 @@ export const Share: React.FC = () => {
         const res = await axiosInstance.get("/content/mylink");
         if (res.data.share && res.data.hash) {
           setIsShared(true);
-          setShareLink(`${window.location.origin}/appname/${res.data.hash}`);
+          setShareLink(`${window.location.origin}/content/${res.data.hash}`);
         } else {
           setIsShared(false);
           setShareLink(null);
         }
-      } catch (err) {
-        console.error("Error fetching share status:", err);
+      } catch (err: any) {
+        setIsShared(false);
+        setShareLink(null);
       }
     };
     fetchShareStatus();
@@ -28,13 +29,13 @@ export const Share: React.FC = () => {
     try {
       if (isShared) {
         await axiosInstance.post("/content/share", { share: false });
-        alert("Sharing disabled");
         setIsShared(false);
         setShareLink(null);
+        alert("Sharing disabled");
       } else {
         const res = await axiosInstance.post("/content/share", { share: true });
         if (res.data.hash) {
-          const link = `${window.location.origin}/appname/${res.data.hash}`;
+          const link = `${window.location.origin}/content/${res.data.hash}`;
           setIsShared(true);
           setShareLink(link);
           alert(`Share link generated: ${link}`);
@@ -66,6 +67,7 @@ export const Share: React.FC = () => {
           <a
             href={shareLink}
             target="_blank"
+            rel="noopener noreferrer"
             className="text-indigo-500 hover:underline"
           >
             {shareLink}

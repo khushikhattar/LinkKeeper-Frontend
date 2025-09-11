@@ -7,6 +7,7 @@ import {
   Tag as TagIcon,
   LogOut,
   Trash2,
+  Share2,
 } from "lucide-react";
 import { AddContent } from "./pages/content/AddContent";
 import { UserContent } from "./pages/content/UserContent";
@@ -15,6 +16,7 @@ import { Logout } from "./pages/user/Logout";
 import { Delete } from "./pages/user/Delete";
 import { ModeToggle } from "./Toggle";
 import { TagManager } from "../components/pages/tags/TagManager";
+import { Share } from "./pages/content/Share";
 
 export const Sidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -28,8 +30,10 @@ export const Sidebar: React.FC = () => {
         return <UpdateProfile />;
       case "userContent":
         return <UserContent />;
-      case "tags": 
+      case "tags":
         return <TagManager />;
+      case "shareContent":
+        return <Share />;
       case "logout":
         return <Logout />;
       case "delete":
@@ -50,10 +54,11 @@ export const Sidebar: React.FC = () => {
       label: "My Content",
       icon: <ClipboardList className="w-5 h-5" />,
     },
+    { id: "tags", label: "Manage Tags", icon: <TagIcon className="w-5 h-5" /> },
     {
-      id: "tags",
-      label: "Manage Tags",
-      icon: <TagIcon className="w-5 h-5" />,
+      id: "shareContent",
+      label: "Share Content",
+      icon: <Share2 className="w-5 h-5" />,
     },
     {
       id: "updateProfile",
@@ -66,7 +71,7 @@ export const Sidebar: React.FC = () => {
     <div className="flex h-screen bg-background text-foreground">
       {/* Sidebar */}
       <div
-        className={`flex flex-col bg-gray-900 text-white transition-width duration-300 ${
+        className={`flex flex-col transition-width duration-300 ${
           isOpen ? "w-64" : "w-16"
         }`}
       >

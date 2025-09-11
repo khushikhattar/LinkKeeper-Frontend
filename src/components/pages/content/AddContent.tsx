@@ -36,7 +36,7 @@ export const AddContent: React.FC = () => {
       const res = await axiosInstance.post("/content/add", data);
       const newContent: ContentItem = {
         ...data,
-        _id: res.data._id || Date.now().toString(), // backend id or temporary id
+        _id: res.data._id || Date.now().toString(),
       };
       setContents((prev) => [newContent, ...prev]);
       reset();

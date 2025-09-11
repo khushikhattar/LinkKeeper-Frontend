@@ -30,7 +30,17 @@ export const ContentCard: React.FC<ContentCardProps> = ({
   };
 
   return (
-    <div className="bg-card dark:bg-gray-700 shadow-md rounded-xl p-4 w-full">
+    <div className="bg-card dark:bg-gray-700 shadow-md rounded-xl p-4 w-full relative">
+      {!isReadOnly && onDelete && (
+        <button
+          onClick={handleDeleteClick}
+          aria-label="Delete content"
+          className="absolute top-3 right-3 text-red-500 hover:text-red-600"
+        >
+          <Trash size={18} />
+        </button>
+      )}
+
       <h3 className="text-lg font-semibold mb-2 text-card-foreground">
         {title}
       </h3>
@@ -46,18 +56,6 @@ export const ContentCard: React.FC<ContentCardProps> = ({
         Visit Link
       </a>
 
-      {/* Delete content */}
-      {!isReadOnly && onDelete && (
-        <button
-          onClick={handleDeleteClick}
-          aria-label="Delete content"
-          className="mt-2 text-red-500 hover:text-red-600"
-        >
-          <Trash />
-        </button>
-      )}
-
-      {/* Tags */}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
           {tags.map((t) => (

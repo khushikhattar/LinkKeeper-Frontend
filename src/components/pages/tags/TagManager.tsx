@@ -5,16 +5,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 
-const addTagSchema = z.object({ title: z.string().min(1, "Title required") });
-type AddTagInput = z.infer<typeof addTagSchema>;
-
-const addTagsToContentSchema = z.object({
-  contentId: z.string(),
-  tagIds: z.array(z.string()),
+const createTagSchema = z.object({
+  title: z.string().min(1, "Title required"),
+  contentId: z.string().optional(),
 });
-type AddTagsToContentInput = z.infer<typeof addTagsToContentSchema>;
+type CreateTagInput = z.infer<typeof createTagSchema>;
 
-// --- Types ---
+const assignTagsSchema = z.object({
+  contentId: z.string(),
+  tagIds: z.array(z.string()).min(1, "Select at least one tag"),
+});
+type AssignTagsInput = z.infer<typeof assignTagsSchema>;
+
 type Tag = { _id: string; title: string };
 type Content = {
   _id: string;
@@ -27,28 +29,28 @@ type Content = {
 export const TagManager: React.FC = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [contents, setContents] = useState<Content[]>([]);
-  const [searchResults, setSearchResults] = useState<Content[]>([]);
-  const [searchTagIds, setSearchTagIds] = useState<string[]>([]);
-  const [beforeDate, setBeforeDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [assigning, setAssigning] = useState(false);
 
-  // --- Fetch user content and extract unique tags ---
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get("/content/user-content");
-        const contentData = res.data.content || [];
+        const resContents = await axiosInstance.get("/content/user-content");
+        const contentData: Content[] = resContents.data?.content || [];
         setContents(contentData);
 
-        // extract unique tags
+        const resTags = await axiosInstance.get("/tags/user-tags");
+        const userTags: Tag[] = resTags.data?.tags || [];
         const tagMap: Record<string, Tag> = {};
-        contentData.forEach((c: Content) =>
-          c.tags.forEach((t) => (tagMap[t._id] = t))
+        userTags.forEach((t) => (tagMap[t._id] = t));
+        contentData.forEach((c) =>
+          (c.tags || []).forEach((t) => (tagMap[t._id] = t))
         );
         setTags(Object.values(tagMap));
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch contents/tags:", err);
       } finally {
         setLoading(false);
       }
@@ -56,73 +58,98 @@ export const TagManager: React.FC = () => {
     fetchData();
   }, []);
 
-  // --- Add Tag ---
   const {
-    register: registerTag,
-    handleSubmit: handleSubmitTag,
-    reset: resetTag,
-  } = useForm<AddTagInput>({ resolver: zodResolver(addTagSchema) });
+    register: registerCreate,
+    handleSubmit: handleSubmitCreate,
+    reset: resetCreate,
+    watch: watchCreate,
+  } = useForm<CreateTagInput>({
+    resolver: zodResolver(createTagSchema),
+  });
 
-  const onAddTag = async (data: AddTagInput) => {
+  const onCreateTag = async (data: CreateTagInput) => {
+    if (!data.title.trim()) return alert("Tag title required");
+    setCreating(true);
     try {
-      const res = await axiosInstance.post("/tags/add", data);
-      setTags((prev) => [...prev, res.data.tag]);
-      resetTag();
-      alert("Tag added successfully");
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Error adding tag");
-    }
-  };
-
-  // --- Add Tags to Content ---
-  const { register: registerContentTag, handleSubmit: handleSubmitContentTag } =
-    useForm<AddTagsToContentInput>({
-      resolver: zodResolver(addTagsToContentSchema),
-    });
-
-  const onAddTagsToContent = async (data: AddTagsToContentInput) => {
-    try {
-      const res = await axiosInstance.post("/content/tags", data);
-      setContents((prev) =>
-        prev.map((c) => (c._id === data.contentId ? res.data.content : c))
+      const resTag = await axiosInstance.post("/tags/add", {
+        title: data.title,
+      });
+      const newTag: Tag = resTag.data.tag;
+      setTags((prev) =>
+        prev.find((t) => t._id === newTag._id) ? prev : [...prev, newTag]
       );
-      alert("Tags added to content successfully");
+      if (data.contentId) {
+        const resAssign = await axiosInstance.post("/tags/content/tags", {
+          contentId: data.contentId,
+          tagIds: [newTag._id],
+        });
+        const updatedContent: Content = resAssign.data.content;
+        setContents((prev) =>
+          prev.map((c) => (c._id === updatedContent._id ? updatedContent : c))
+        );
+      }
+      resetCreate();
+      alert("Tag created successfully");
     } catch (err: any) {
-      alert(err.response?.data?.message || "Error adding tags to content");
+      console.error(err);
+      alert(err?.response?.data?.message || "Error creating tag");
+    } finally {
+      setCreating(false);
     }
   };
 
-  // --- Delete tag from content ---
+  const {
+    register: registerAssign,
+    handleSubmit: handleSubmitAssign,
+    reset: resetAssign,
+  } = useForm<AssignTagsInput>({
+    resolver: zodResolver(assignTagsSchema),
+  });
+
+  const onAssignTags = async (data: AssignTagsInput) => {
+    setAssigning(true);
+    try {
+      const res = await axiosInstance.post("/tags/content/tags", data);
+      const updatedContent: Content = res.data.content;
+      setContents((prev) =>
+        prev.map((c) => (c._id === updatedContent._id ? updatedContent : c))
+      );
+      const assignedTagsFromResponse = updatedContent.tags || [];
+      setTags((prev) => {
+        const map = new Map(prev.map((t) => [t._id, t]));
+        assignedTagsFromResponse.forEach((t) => map.set(t._id, t));
+        return Array.from(map.values());
+      });
+
+      resetAssign();
+      alert("Tags assigned successfully");
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.response?.data?.message || "Error assigning tags");
+    } finally {
+      setAssigning(false);
+    }
+  };
+
   const handleDeleteTagFromContent = async (
     contentId: string,
     tagId: string
   ) => {
-    if (!window.confirm("Are you sure you want to remove this tag?")) return;
+    if (!window.confirm("Remove this tag from content?")) return;
     try {
       const res = await axiosInstance.delete(
-        `/content/${contentId}/tags/${tagId}`
+        `/tags/content/${contentId}/tags/${tagId}`,
+        { withCredentials: true }
       );
-      setContents((prev) =>
-        prev.map((c) => (c._id === contentId ? res.data.content : c))
-      );
-      alert("Tag removed successfully");
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Error removing tag");
-    }
-  };
 
-  // --- Search content ---
-  const handleSearch = async () => {
-    try {
-      const query = new URLSearchParams();
-      if (searchTagIds.length) query.append("tagIds", searchTagIds.join(","));
-      if (beforeDate) query.append("beforeDate", beforeDate);
-      const res = await axiosInstance.get(
-        `/content/search?${query.toString()}`
+      const updatedContent: Content = res.data.content;
+      setContents((prev) =>
+        prev.map((c) => (c._id === updatedContent._id ? updatedContent : c))
       );
-      setSearchResults(res.data.contents);
+      alert("Tag removed from content");
     } catch (err: any) {
-      alert(err.response?.data?.message || "Error searching content");
+      console.error(err);
+      alert(err?.response?.data?.message || "Error removing tag");
     }
   };
 
@@ -130,40 +157,45 @@ export const TagManager: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Add Tag */}
       <div className="bg-card dark:bg-gray-700 p-6 rounded-xl shadow-md">
-        <h2 className="text-2xl font-semibold text-card-foreground mb-4">
-          Add Tag
-        </h2>
-        <form onSubmit={handleSubmitTag(onAddTag)} className="flex gap-2">
+        <h2 className="text-2xl font-semibold mb-4">Create Tag</h2>
+        <form
+          onSubmit={handleSubmitCreate(onCreateTag)}
+          className="flex flex-col md:flex-row gap-2"
+        >
           <input
             type="text"
-            {...registerTag("title")}
+            {...registerCreate("title")}
             placeholder="Tag title"
-            className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white"
+            className="flex-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
           />
+          <select
+            {...registerCreate("contentId")}
+            className="flex-1 px-4 py-2 border rounded-md"
+          >
+            <option value="">(optional) Assign to content</option>
+            {contents.map((c) => (
+              <option key={c._id} value={c._id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            disabled={!watchCreate("title") || creating}
+            className="px-4 py-2 bg-green-600 text-white rounded-md"
           >
-            Add
+            {creating ? "Creating..." : "Create Tag"}
           </button>
         </form>
       </div>
 
-      {/* Add Tags to Content */}
       <div className="bg-card dark:bg-gray-700 p-6 rounded-xl shadow-md space-y-4">
-        <h2 className="text-2xl font-semibold text-card-foreground">
-          Add Tags to Content
-        </h2>
-        <form
-          onSubmit={handleSubmitContentTag(onAddTagsToContent)}
-          className="space-y-2"
-        >
+        <h2 className="text-2xl font-semibold">Assign Existing Tags</h2>
+        <form onSubmit={handleSubmitAssign(onAssignTags)} className="space-y-2">
           <select
-            {...registerContentTag("contentId")}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white"
-            defaultValue=""
+            {...registerAssign("contentId")}
+            className="w-full px-4 py-2 border rounded-md"
           >
             <option value="" disabled>
               Select Content
@@ -175,9 +207,9 @@ export const TagManager: React.FC = () => {
             ))}
           </select>
           <select
-            {...registerContentTag("tagIds")}
+            {...registerAssign("tagIds")}
             multiple
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white"
+            className="w-full px-4 py-2 border rounded-md"
           >
             {tags.map((t) => (
               <option key={t._id} value={t._id}>
@@ -187,72 +219,13 @@ export const TagManager: React.FC = () => {
           </select>
           <button
             type="submit"
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            disabled={assigning}
+            className="px-4 py-2 bg-blue-600 text-black rounded-md"
           >
-            Add Tags
+            {assigning ? "Assigning..." : "Assign Tags"}
           </button>
         </form>
       </div>
-
-      {/* Search Content */}
-      <div className="bg-card dark:bg-gray-700 p-6 rounded-xl shadow-md space-y-4">
-        <h2 className="text-2xl font-semibold text-card-foreground">
-          Search Content
-        </h2>
-        <div className="flex flex-col md:flex-row gap-2">
-          <select
-            multiple
-            value={searchTagIds}
-            onChange={(e) =>
-              setSearchTagIds(
-                Array.from(e.target.selectedOptions, (o) => o.value)
-              )
-            }
-            className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white"
-          >
-            {tags.map((t) => (
-              <option key={t._id} value={t._id}>
-                {t.title}
-              </option>
-            ))}
-          </select>
-          <input
-            type="date"
-            value={beforeDate}
-            onChange={(e) => setBeforeDate(e.target.value)}
-            className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white"
-          />
-          <button
-            onClick={handleSearch}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-          >
-            Search
-          </button>
-        </div>
-
-        {/* Search Results */}
-        <div className="space-y-4 mt-4">
-          {searchResults.length > 0 ? (
-            searchResults.map((c) => (
-              <ContentCard
-                key={c._id}
-                _id={c._id}
-                title={c.title}
-                link={c.link}
-                type={c.type}
-                tags={c.tags}
-                onTagDelete={handleDeleteTagFromContent}
-              />
-            ))
-          ) : (
-            <p className="text-gray-500 dark:text-gray-300 text-center mt-2">
-              No results found
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* User Content */}
       <div className="space-y-4">
         {contents.map((c) => (
           <ContentCard

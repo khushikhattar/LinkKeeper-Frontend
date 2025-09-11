@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 
 interface User {
@@ -14,32 +14,42 @@ interface AuthContextType {
   loading: boolean;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchUser = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        if (mounted) setLoading(false);
+        return;
+      }
+
       try {
-        const res = await axiosInstance.get("/users/me", {
-          withCredentials: true,
-        });
-        setUser(res.data.user);
-      } catch (error) {
-        // no user logged in or token invalid is expected here
-        setUser(null);
+        const res = await axiosInstance.get("/users/me");
+        if (mounted) setUser(res.data.user);
+      } catch {
+        if (mounted) setUser(null);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
+
     fetchUser();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const login = (userData: User) => setUser(userData);

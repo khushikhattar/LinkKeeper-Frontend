@@ -1,63 +1,43 @@
 import axios from "axios";
 
+const baseURL = "https://linkkeeper-backend.onrender.com/api/v1";
+
 const axiosInstance = axios.create({
-  baseURL: "https://linkkeeper-backend.onrender.com/api/v1",
+  baseURL,
   withCredentials: true,
 });
-/*This pattern avoids multiple refresh calls 
-flooding your server and ensures all requests proceed once tokens are refreshed. */
-let isRefreshing = false;
-let failedQueue: {
-  resolve: (value?: any) => void;
-  reject: (error: any) => void;
-  originalRequest: any;
-}[] = [];
 
-const processQueue = (error: any, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(axiosInstance(prom.originalRequest));
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
-  });
-  failedQueue = [];
-};
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        // If refresh is ongoing, queue the request
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject, originalRequest });
-        });
-      }
-
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/login") &&
+      !originalRequest.url?.includes("/register")
+    ) {
       originalRequest._retry = true;
-      isRefreshing = true;
 
-      return new Promise(async (resolve, reject) => {
-        try {
-          await axiosInstance.post(
-            "/auth/refresh",
-            {},
-            { withCredentials: true }
-          );
-
-          processQueue(null);
-          resolve(axiosInstance(originalRequest));
-        } catch (err) {
-          processQueue(err, null);
-          window.location.href = "/login";
-          reject(err);
-        } finally {
-          isRefreshing = false;
-        }
-      });
+      try {
+        await axiosInstance.get("/users/refresh", { withCredentials: true });
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        localStorage.removeItem("accessToken");
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
     }
 
     return Promise.reject(error);

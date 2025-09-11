@@ -42,7 +42,6 @@ export const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-800 dark:text-gray-200 px-4 relative">
-      {/* Theme Toggle */}
       <div className="absolute top-4 right-4 z-50">
         <ModeToggle />
       </div>
@@ -72,6 +71,7 @@ export const Login: React.FC = () => {
             <label className="block mb-1 font-medium">Password</label>
             <input
               type="password"
+              autoComplete="current-password"
               {...register("password")}
               placeholder="Enter your password"
               className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-background dark:bg-gray-700 text-foreground dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 transition-colors"
