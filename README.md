@@ -19,35 +19,41 @@ It connects to the backend hosted at [`https://linkkeeper-backend.onrender.com`]
 
 ## 📂 Project Structure
 
+```
 src/
-┣ api/axiosInstance.ts # Axios setup with refresh token handling
+┣ api/
+┃ ┗ axiosInstance.ts        # Axios setup with refresh token handling
 ┣ auth/
-┃ ┣ authContext.tsx # Authentication context provider
-┃ ┣ ProtectRoute.tsx # Protects routes for logged-in users
-┃ ┗ useAuth.tsx # Custom hook for accessing auth state
+┃ ┣ AuthContext.tsx         # Authentication context provider
+┃ ┣ ProtectedRoute.tsx      # Protects routes for logged-in users
+┃ ┗ useAuth.tsx             # Custom hook for accessing auth state
 ┣ components/
-┃ ┣ Sidebar.tsx # Sidebar navigation with tabs
-┃ ┣ Theme.tsx # Theme provider (light/dark/system)
-┃ ┣ Toggle.tsx # Theme toggle dropdown
-┃ ┣ ui/ # shadcn/ui components (button, card, dropdown-menu, etc.)
-┃ ┗ pages/
-┃ ┣ Home.tsx # Landing page
-┃ ┣ Dashboard.tsx # Main dashboard (protected)
+┃ ┣ Sidebar.tsx             # Sidebar navigation with tabs
+┃ ┣ Theme.tsx               # Theme provider (light/dark/system)
+┃ ┣ ThemeToggle.tsx         # Theme toggle dropdown
+┃ ┗ ui/                     # shadcn/ui components (button, card, dropdown-menu, etc.)
+┣ pages/
+┃ ┣ Home.tsx                # Landing page
+┃ ┣ Dashboard.tsx           # Main dashboard (protected)
 ┃ ┣ content/
-┃ ┃ ┣ AddContent.tsx # Add new content
-┃ ┃ ┣ UserContent.tsx # View user’s saved content
-┃ ┃ ┗ SharedContent.tsx # View shared content by hash
-┃ ┣ tags/TagManager.tsx # Manage tags
+┃ ┃ ┣ AddContent.tsx        # Add new content
+┃ ┃ ┣ UserContent.tsx       # View user’s saved content
+┃ ┃ ┣ SharedContent.tsx     # View shared content by hash
+┃ ┃ ┗ ContentCard.tsx       # UI card for content
+┃ ┣ tags/
+┃ ┃ ┗ TagManager.tsx        # Manage tags
 ┃ ┗ user/
-┃ ┣ SignUp.tsx # User registration
-┃ ┣ Login.tsx # User login
-┃ ┣ UpdateProfile.tsx # Update profile info
-┃ ┣ Logout.tsx # Logout flow
-┃ ┗ Delete.tsx # Delete account
-┣ lib/utils.ts # Utility for class merging (clsx + tailwind-merge)
-┣ App.tsx # Defines routes
-┣ main.tsx # Root entry point
-┣ index.css # Global styles
+┃ ┃ ┣ SignUp.tsx            # User registration
+┃ ┃ ┣ Login.tsx             # User login
+┃ ┃ ┣ UpdateProfile.tsx     # Update profile info
+┃ ┃ ┣ Logout.tsx            # Logout flow
+┃ ┃ ┗ DeleteAccount.tsx     # Delete account
+┣ lib/
+┃ ┗ utils.ts                # Utility for class merging (clsx + tailwind-merge)
+┣ App.tsx                   # Defines routes
+┣ main.tsx                  # Root entry point
+┣ index.css                 # Global styles
+```
 
 ---
 
