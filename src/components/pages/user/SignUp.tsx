@@ -7,7 +7,6 @@ import axiosInstance from "../../../api/axiosInstance";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { ModeToggle } from "../../Toggle";
-import { useTheme } from "../../Theme";
 
 const signupSchema = z
   .object({
@@ -26,7 +25,6 @@ type Signup = z.infer<typeof signupSchema>;
 
 export const SignUp: React.FC = () => {
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
 
