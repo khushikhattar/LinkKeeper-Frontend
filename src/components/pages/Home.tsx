@@ -6,10 +6,6 @@ import { ModeToggle } from "../../components/Toggle";
 export const Home = () => {
   return (
     <div className="min-h-screen relative bg-background text-foreground transition-colors duration-300">
-      <div className="absolute top-4 right-4 z-50">
-        <ModeToggle />
-      </div>
-
       {/* Header */}
       <header className="border-b bg-card/70 backdrop-blur-sm transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,6 +15,7 @@ export const Home = () => {
               <span className="ml-2 text-xl font-bold">LinkKeeper</span>
             </div>
             <div className="flex items-center space-x-4">
+              <ModeToggle /> {/* 👈 ye ab yahin hoga */}
               <Button variant="ghost" asChild>
                 <a href="/login">Sign In</a>
               </Button>
