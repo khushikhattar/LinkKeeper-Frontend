@@ -6,7 +6,6 @@ import { Login } from "./components/pages/user/Login";
 import { Dashboard } from "./components/pages/Dashboard";
 import { SharedContent } from "./components/pages/content/SharedContent";
 import ProtectedRoute from "./auth/ProtectRoute";
-
 const App: React.FC = () => {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">

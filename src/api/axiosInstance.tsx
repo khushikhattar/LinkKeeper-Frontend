@@ -1,7 +1,9 @@
 import axios from "axios";
+
+const baseURL = "https://linkkeeper-backend.onrender.com/api/v1";
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
+  baseURL,
+  // withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use(
