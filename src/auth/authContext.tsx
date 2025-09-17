@@ -4,13 +4,14 @@ import axiosInstance from "../api/axiosInstance";
 
 interface User {
   _id: string;
-  identifier: string;
+  username: string;
+  email: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (userData: User) => void;
-  logout: () => Promise<void>;
+  login: (userData: User, token: string) => void;
+  logout: () => void;
   loading: boolean;
 }
 
@@ -40,6 +41,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (mounted) setUser(res.data.user);
       } catch {
         if (mounted) setUser(null);
+        localStorage.removeItem("accessToken");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -52,17 +54,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const login = (userData: User) => setUser(userData);
+  // Save token in localStorage during login
+  const login = (userData: User, token: string) => {
+    localStorage.setItem("accessToken", token);
+    setUser(userData);
+  };
 
-  const logout = async () => {
-    try {
-      await axiosInstance.post("/users/logout", {}, { withCredentials: true });
-    } catch (err) {
-      console.error("Logout failed:", err);
-    } finally {
-      setUser(null);
-      navigate("/login");
-    }
+  const logout = () => {
+    localStorage.removeItem("accessToken");
+    setUser(null);
+    navigate("/login");
   };
 
   return (
