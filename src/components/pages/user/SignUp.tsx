@@ -39,7 +39,6 @@ export const SignUp: React.FC = () => {
     setLoading(true);
     try {
       await axiosInstance.post("/users/register", data, {
-        withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
       navigate("/login");
