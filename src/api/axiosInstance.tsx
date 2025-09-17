@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 const baseURL = "https://linkkeeper-backend.onrender.com/api/v1";
 const axiosInstance = axios.create({
   baseURL,
-  // withCredentials: true,
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use(
