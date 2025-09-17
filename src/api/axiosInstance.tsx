@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = "https://linkkeeper-backend.onrender.com";
+const baseURL = "https://linkkeeper-backend.onrender.com/api/v1";
 
 const axiosInstance = axios.create({
   baseURL,
