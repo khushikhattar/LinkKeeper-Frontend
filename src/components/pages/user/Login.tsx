@@ -30,8 +30,11 @@ export const Login: React.FC = () => {
     setLoading(true);
     try {
       const res = await axiosInstance.post("/users/login", data);
-      if (!res.data.user) throw new Error("Login response invalid");
-      login(res.data.user);
+
+      if (!res.data.user || !res.data.token)
+        throw new Error("Login response invalid");
+      login(res.data.user, res.data.token);
+
       navigate("/dashboard");
     } catch (error: any) {
       setApiError(error.response?.data?.message || "Login failed.");

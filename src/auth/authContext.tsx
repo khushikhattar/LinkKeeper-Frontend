@@ -53,8 +53,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       mounted = false;
     };
   }, []);
-
-  // Save token in localStorage during login
   const login = (userData: User, token: string) => {
     localStorage.setItem("accessToken", token);
     setUser(userData);
