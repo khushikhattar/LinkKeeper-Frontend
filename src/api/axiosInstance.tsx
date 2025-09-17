@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const baseURL = "https://linkkeeper-backend.onrender.com/api/v1";
+const baseURL = "https://linkkeeper-backend.onrender.com";
 const axiosInstance = axios.create({
   baseURL,
   //withCredentials: true,
