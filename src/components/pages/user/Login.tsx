@@ -30,10 +30,13 @@ export const Login: React.FC = () => {
     setLoading(true);
     try {
       const res = await axiosInstance.post("/users/login", data);
+      const user = res.data.user;
+      const token = res.data.accessToken;
 
-      if (!res.data.user || !res.data.token)
-        throw new Error("Login response invalid");
-      login(res.data.user, res.data.token);
+      if (!user || !token) throw new Error("Login response invalid");
+
+      login(user, token);
+      localStorage.setItem("accessToken", token);
 
       navigate("/dashboard");
     } catch (error: any) {
