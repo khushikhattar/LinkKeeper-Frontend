@@ -8,7 +8,7 @@ It connects to the backend hosted at [`https://linkkeeper-backend.onrender.com`]
 
 ## 🚀 Features
 
-- 🔐 **Authentication**: Register, login, logout with secure JWT cookies
+- 🔐 **Authentication**: Register, login, logout with secure JWT tokens
 - 📝 **Content Management**: Add, view, and manage saved content
 - 🏷️ **Tags**: Create and organize content with tags
 - 👤 **User Profile**: Update profile or delete account
@@ -108,7 +108,7 @@ npm run dev
 ## 🔒 Authentication Flow
 
 1. Login/Register via /users/login & /users/register
-2. Access/Refresh tokens are stored in HTTP-only cookies
+2. Access/Refresh tokens are stored in local storage
 3. axiosInstance handles 401 errors and automatically retries failed requests after refreshing tokens
 4. Protected routes are wrapped with <ProtectedRoute>
 
