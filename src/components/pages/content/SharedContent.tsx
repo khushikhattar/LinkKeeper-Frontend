@@ -70,7 +70,7 @@ export const SharedContent: React.FC = () => {
                   title={item.title}
                   link={item.link}
                   type={item.type}
-                  isReadOnly={true} // Disable delete and share buttons
+                  isReadOnly={true} 
                 />
               ))}
             </div>
