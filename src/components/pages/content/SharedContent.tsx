@@ -30,7 +30,6 @@ export const SharedContent: React.FC = () => {
       setData(null);
 
       try {
-        // ✅ Only public route
         const res = await axiosInstance.get(`/content/${hash}`);
         if (!res.data || !res.data.username) {
           setError("Invalid link or user does not exist");
